@@ -76,7 +76,7 @@ opentelemetry-semantic-conventions==0.49b2
 opentelemetry-util-http==0.49b2
 packaging==23.2
 paginate==0.5.7
-pandas==2.1.1
+pandas
 pathspec==0.12.1
 Pillow==10.1.0
 pkginfo==1.9.6
