@@ -1,0 +1,106 @@
+✅ Project: Scandroid FSP Offline Validation App
+You’ve built a Flask-based application designed for Financial Service Providers (FSPs) to securely access, sync, and validate beneficiary data offline, based on Kobo registration data and 121 Platform transactions.
+
+🧠 Current Functionality
+🔐 FSP Login Flow
+FSPs access the /fsp-login page.
+
+Credentials (username/password) are hardcoded in config.py under:
+
+python
+Copy
+Edit
+FSP_USERNAME = "fspadmin"
+FSP_PASSWORD = "fspsecure123"
+On successful login, they're redirected to /fsp-admin.
+
+🧭 FSP Admin Dashboard
+The page /fsp-admin:
+
+Displays a branded, multilingual interface.
+
+Has a "Sync Latest Records" button.
+
+Triggers a backend sync by running offline_sync.py using subprocess.
+
+Displays a user-friendly message such as:
+
+arduino
+Copy
+Edit
+✅ 124 beneficiaries ready for offline validation.
+🧹 Logout Function
+A Logout button is present on /fsp-admin and redirects users to /fsp-login, clearing the session.
+
+🧰 Offline Cache Functionality (offline_sync.py)
+🔄 How Sync Works
+Loads config from system_config.json.
+
+Pulls:
+
+Transactions from 121 Platform.
+
+Kobo submissions using _uuid.
+
+For each beneficiary:
+
+Retrieves fields specified in display_config.json.
+
+Encrypts each value using Fernet symmetric encryption.
+
+Downloads and encrypts the beneficiary photo.
+
+📂 File Structure
+Offline cache is saved to:
+
+r
+Copy
+Edit
+/offline-cache/payment-{ID}-batch-{#}/
+├── photos/
+│   ├── {uuid}.enc   <- encrypted photo
+└── registrations_cache.json <- encrypted field data
+🔐 Encryption Details
+A symmetric key (Fernet) is stored in system_config.json as ENCRYPTION_KEY.
+
+All sensitive data (names, phones, etc.) + photo files are encrypted.
+
+Opaque protection: FSPs can’t view the files directly — even if they dig into their device.
+
+🧾 Key Files in Use
+Here are the files that have been touched or are part of the current setup:
+
+app.py — the main Flask app handling routes, session, login, and sync
+
+offline_sync.py — downloads + encrypts all cache data and photos
+
+config.py — stores admin/FSP credentials and helpers
+
+system_config.json — stores API credentials, IDs, and the encryption key
+
+display_config.json — defines which fields to cache and which photo field to use
+
+/templates/fsp_login.html — FSP login page
+
+/templates/fsp_admin.html — Admin dashboard
+
+/static/ — Contains logos and the Scandroid banner
+
+🗓️ Next Steps for Monday
+You can simply say:
+
+"Hi, can you pick up from where we left off with the Scandroid FSP app? Here's my app.py."
+
+That will be enough context to continue. I’ll ask for any missing files (like system_config.json, etc.) if needed.
+
+Let me know Monday morning what you’d like to do next — e.g., rendering encrypted images, decrypting on frontend, adding audit logging, or making it production-ready.
+
+Have a well-earned weekend.
+
+
+
+
+
+
+
+

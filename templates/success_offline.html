@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Success</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f8f9fa; display:grid; place-items:center; height:100vh; }
+    .card { background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.08); max-width:420px; text-align:center; }
+    h1 { margin:0 0 8px; font-size:22px; color:green; }
+    p { margin:0 0 16px; color:#333; }
+    a.button {
+      display:inline-block;
+      padding:10px 16px;
+      background:#007bff;
+      color:#fff;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>✅ Successfully submitted</h1>
+    <p>You may now scan the next beneficiary.</p>
+    <a class="button" id="nextBtn" href="#">Scan next beneficiary</a>
+  </div>
+
+  <script>
+    const lang = new URLSearchParams(location.search).get("lang") || "en";
+    document.getElementById("nextBtn").href = `/scan?lang=${encodeURIComponent(lang)}`;
+  </script>
+<script>
+  const APP_VERSION = "4";  // ← bump this to match version.json
+
+  async function checkAppVersion() {
+    try {
+      const res = await fetch("/version.json", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      const latest = data.version;
+      if (latest && latest !== APP_VERSION) {
+        if (confirm("⚠️ A new version is available.\nClick OK to refresh and update.")) {
+          location.reload(true);
+        }
+      }
+    } catch (e) {
+      console.warn("Version check failed", e);
+    }
+  }
+
+  checkAppVersion();
+</script>
+</body>
+</html>

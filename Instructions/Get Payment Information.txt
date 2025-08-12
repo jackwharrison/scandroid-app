@@ -1,0 +1,2 @@
+curl -X GET "https://chad.121.global/api/programs/1/payments/5/transactions" ^
+  -b "access_token_general=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbkBjaGFkLjEyMS5nbG9iYWwiLCJleHAiOjE3NTU4NTQ4NzEuMjg5LCJhZG1pbiI6dHJ1ZSwiaXNPcmdhbml6YXRpb25BZG1pbiI6dHJ1ZSwiaWF0IjoxNzU0NjQ1MjcxfQ.52JKzX55qClKTcAqOO5m9lcpxElffB-zwuXceFlP_J4"

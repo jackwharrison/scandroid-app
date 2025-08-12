@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" {% if lang == 'ar' %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ t.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            position: relative;
+        }
+        .container {
+            max-width: 760px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #ccc;
+        }
+        .photo {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .photo img {
+            max-width: 300px;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .form-group {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        select, textarea, input[type="checkbox"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .submit-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        select option[value="approved"] {
+            background-color: #d4edda;
+        }
+        select option[value="rejected"] {
+            background-color: #f8d7da;
+        }
+        #confirm-person-label {
+            text-align: center;
+            font-weight: bold;
+        }
+        .already-scanned {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="text-align:center;">
+          {% for category, message in messages %}
+            <p style="color: {% if category == 'error' %}red{% else %}green{% endif %};">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="lang-selector">
+        <form method="get" action="/beneficiary">
+            <input type="hidden" name="id" value="{{ request.args.get('id') }}">
+            <label for="lang">{{ t.language }}:</label>
+            <select name="lang" onchange="this.form.submit()">
+                <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+                <option value="fr" {% if lang == 'fr' %}selected{% endif %}>Français</option>
+                <option value="ar" {% if lang == 'ar' %}selected{% endif %}>العربية</option>
+            </select>
+        </form>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="{{ url_for('static', filename='ns1.png') }}" height="60" style="margin-right: 10px;">
+        <img src="{{ url_for('static', filename='scandroid_banner.png') }}" height="60" style="margin-right: 10px;">
+        <img src="{{ url_for('static', filename='ns2.png') }}" height="60">
+    </div>
+
+    <div class="container">
+        <h1>{{ t.title }}</h1>
+        {% for field in display_fields %}
+            <p><strong>{{ field.labels[lang] }}:</strong> {{ data.get(field.key, '') }}</p>
+        {% endfor %}
+
+        {% if photo_config and photo_config.enabled %}
+            <div class="photo">
+                <p><strong>{{ photo_config.labels[lang] }}</strong></p>
+                <img src="{{ photo_url }}" alt="Photo">
+            </div>
+        {% endif %}
+
+
+        {% if already_submitted %}
+        <div class="already-scanned">
+            This person has already been scanned and submitted to 121.
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label for="payment-status">{{ t.payment_status }}</label>
+            <select id="payment-status">
+                <option value="">-- Select --</option>
+                <option value="approved">{{ t.payment_approved }}</option>
+                <option value="rejected">{{ t.payment_rejected }}</option>
+            </select>
+        </div>
+
+        <div class="form-group hidden" id="confirm-approved">
+            <label id="confirm-person-label">{{ t.confirm_person }}</label>
+            <input type="checkbox" id="confirm-checkbox">
+        </div>
+
+        <div class="form-group hidden" id="rejection-reason">
+            <label for="rejection-text">{{ t.rejection_reason }}</label>
+            <textarea id="rejection-text" rows="3"></textarea>
+        </div>
+
+        <form method="POST" action="/update_status" id="status-form">
+            <input type="hidden" name="id" value="{{ request.args.get('id') }}">
+            <input type="hidden" name="lang" value="{{ lang }}">
+            <input type="hidden" name="status" id="status-field">
+            <input type="hidden" name="rejection_reason" id="reason-field">
+            <button class="submit-btn" id="submit-btn" disabled>{{ t.submit }}</button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if not already_submitted %}
+    <script>
+        const paymentSelect = document.getElementById('payment-status');
+        const confirmBox = document.getElementById('confirm-approved');
+        const confirmCheckbox = document.getElementById('confirm-checkbox');
+        const rejectBox = document.getElementById('rejection-reason');
+        const rejectionText = document.getElementById('rejection-text');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusField = document.getElementById('status-field');
+        const reasonField = document.getElementById('reason-field');
+
+        function updateFormVisibility() {
+            const value = paymentSelect.value;
+            confirmBox.classList.add('hidden');
+            rejectBox.classList.add('hidden');
+            submitBtn.disabled = true;
+
+            if (value === "approved") {
+                confirmBox.classList.remove('hidden');
+            } else if (value === "rejected") {
+                rejectBox.classList.remove('hidden');
+            }
+        }
+
+        function updateSubmitState() {
+            const value = paymentSelect.value;
+            if (value === "approved") {
+                submitBtn.disabled = !confirmCheckbox.checked;
+            } else if (value === "rejected") {
+                submitBtn.disabled = rejectionText.value.trim() === "";
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        paymentSelect.addEventListener('change', () => {
+            updateFormVisibility();
+            updateSubmitState();
+        });
+
+        confirmCheckbox.addEventListener('change', updateSubmitState);
+        rejectionText.addEventListener('input', updateSubmitState);
+
+        submitBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const selectedStatus = paymentSelect.value;
+            if (selectedStatus === "approved" && confirmCheckbox.checked) {
+                statusField.value = "Payment Approved";
+                reasonField.value = "";
+                document.getElementById('status-form').submit();
+            } else if (selectedStatus === "rejected" && rejectionText.value.trim() !== "") {
+                statusField.value = "Payment Rejected";
+                reasonField.value = rejectionText.value.trim();
+                document.getElementById('status-form').submit();
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

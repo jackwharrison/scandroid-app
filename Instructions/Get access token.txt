@@ -1,0 +1,6 @@
+curl -X POST "https://chad.121.global/api/users/login" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"admin@chad.121.global\", \"password\":\"UJJemsR2R1vnbb*h*R9xqvXmnNdiafiLGSRw9rvq6y\"}"
+
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbkBjaGFkLjEyMS5nbG9iYWwiLCJleHAiOjE3NTU4NTQ4NzEuMjg5LCJhZG1pbiI6dHJ1ZSwiaXNPcmdhbml6YXRpb25BZG1pbiI6dHJ1ZSwiaWF0IjoxNzU0NjQ1MjcxfQ.52JKzX55qClKTcAqOO5m9lcpxElffB-zwuXceFlP_J4

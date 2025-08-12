@@ -1,0 +1,29 @@
+[
+  {
+    "uuid": "160c3efe-c032-4012-9cae-d27164e6a23e",
+    "registrationId": 4,
+    "photo_filename": "160c3efe-c032-4012-9cae-d27164e6a23e.enc",
+    "data": {
+      "city": "gAAAAABomxifoOqBJ9eRRf0yKtF3UjhM4SIq_i2TS6DMwnIBB5iWsLwyO7R-1jGj52MIUautb5s6PpHwTAoJY_aZzVSKaKDaCA==",
+      "fullName": "gAAAAABomxifkASixPlF-QyiFYRrGdOqLjIVIxdGdSwIDIjiE5_N7nPQ7X7NQLOtpl3PxR3Cbn_emwaK-KC16uj_E90XoBL8OQ=="
+    }
+  },
+  {
+    "uuid": "b5289dbf-716c-4d44-9eca-1eee50797bda",
+    "registrationId": 6,
+    "photo_filename": "b5289dbf-716c-4d44-9eca-1eee50797bda.enc",
+    "data": {
+      "city": "gAAAAABomxigvmd8chRJr3LtnhvrRyot6Ci6UW8x0yGZ7w7JynLqxrBQyyFGvd0CQbthhjJfKlBJ6814kIz-i62sHx_E_lH94Q==",
+      "fullName": "gAAAAABomxigcRWllywgfB4BtZnD1wiozGuO2sbTj7dn-LB4VwnOspYOZri6Dde87jZV-b8ET9tByeyb7ZPus9lO9lNpC6vnRA=="
+    }
+  },
+  {
+    "uuid": "4fa117d8-705a-4220-8317-ec1c084f45a2",
+    "registrationId": 8,
+    "photo_filename": "4fa117d8-705a-4220-8317-ec1c084f45a2.enc",
+    "data": {
+      "city": "gAAAAABomxihVc0-jzIi9-qLKLMBAd7iIc6zZ-eCAnYuqJZUi2VEKx_zmane7trdjrrslllbVz3-qA0073YN04_4k9t6Ie6VrQ==",
+      "fullName": "gAAAAABomxihUNiFLTcrlvGq4_FQjbYXx21juRkNR24ebGCFJJ__SDe8XirWzDDT7sbsm9-Dc4n3fuXIICxj9xfA2bxeaKwagA=="
+    }
+  }
+]

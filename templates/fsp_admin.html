@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" {% if lang == 'ar' %}dir="rtl"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <title>FSP Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    background-color: white;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 120px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .header-left { display:flex; align-items:center; gap:10px; }
+  .header-left img { height: 60px; }
+  .scandroid-banner img { height: 100px; object-fit: contain; max-width: 100%; display: block; }
+  .right-controls { display: flex; align-items: center; gap: 10px; }
+
+  /* Online/Offline status pill */
+  .status-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700;
+    border:1px solid transparent; user-select:none;
+  }
+  .status-pill.online{ background:#e7f9ef; color:#0f5132; border-color:#b7ebcd; }
+  .status-pill.offline{ background:#fdecec; color:#842029; border-color:#f5c2c7; }
+
+  main { flex-grow: 1; padding: 40px; text-align: center; }
+  .sync-section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px #ccc; max-width: 500px; margin: auto; }
+  .sync-section h2 { margin-bottom: 20px; }
+
+  /* Unified button styles */
+  #syncBtn, #importBtn, #scanBtn {
+    display: block;
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+
+  /* Individual colours */
+  #syncBtn { background-color: #007bff; color: white; }
+  #importBtn { background-color: #ffd580; color: #333; } /* peachy */
+  #scanBtn { background-color: #28a745; color: white; }
+
+  #statusMessage { font-size: 16px; margin-top: 10px; color: #333; }
+  footer { background-color: #f1f1f1; color: #666; padding: 15px 30px; font-size: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  select { padding: 6px; }
+  .logout-button { padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; }
+
+  /* Mobile */
+  @media (max-width: 576px) {
+    header { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; height: auto; padding: 12px; }
+    .header-left img { height: 35px; }
+    .scandroid-banner img { height: 50px; max-width: 70%; }
+    .right-controls { flex-direction: row; width: 100%; justify-content: center; gap:8px; }
+    main { padding: 20px; }
+    .sync-section { padding: 20px; width: 100%; max-width: 420px; box-sizing: border-box; }
+    #syncBtn, #importBtn, #scanBtn { width: 100%; }
+    footer { flex-direction: column; text-align: center; padding: 12px 16px; }
+  }
+</style>
+
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/static/scandroid.png">
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <img src="{{ url_for('static', filename='ns1.png') }}" alt="NS1">
+    <img src="{{ url_for('static', filename='ns2.png') }}" alt="NS2">
+  </div>
+
+  <div class="scandroid-banner">
+    <img src="{{ url_for('static', filename='scandroid_banner.png') }}" alt="Scandroid">
+  </div>
+
+  <div class="right-controls">
+    <!-- status pill -->
+    <span id="netStatus" class="status-pill offline">{{ (t.offline or 'Offline') }}</span>
+
+    <form method="get" action="/fsp-admin">
+      <select name="lang" onchange="this.form.submit()">
+        <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+        <option value="fr" {% if lang == 'fr' %}selected{% endif %}>Français</option>
+        <option value="ar" {% if lang == 'ar' %}selected{% endif %}>العربية</option>
+      </select>
+    </form>
+    <form method="get" action="/fsp-logout">
+      <button type="submit" class="logout-button">{{ t.logout or "Logout" }}</button>
+    </form>
+  </div>
+</header>
+
+<main>
+  <div class="sync-section">
+    <h2>{{ t.fsp_sync_title or "📥 FSP: Sync Offline Records" }}</h2>
+    <button id="syncBtn">{{ t.step1 or t.sync_latest or "Step 1. Sync Latest Records" }}</button>
+    <button id="importBtn">{{ t.step2 or "Step 2. Import Offline Cache" }}</button>
+    <button id="scanBtn" onclick="location.href='/scan?lang={{ lang }}'">{{ t.step3 or "Step 3. Scan QR Codes" }}</button>
+    <div id="statusMessage">{{ t.sync_initial or "Click sync to see how many beneficiaries are ready for offline validation." }}</div>
+  </div>
+</main>
+
+<footer>
+  <div>Developed by 510 @ The Netherlands Red Cross</div>
+  <div>If you need support contact jharrison@redcross.nl</div>
+</footer>
+
+<!-- IndexedDB helper -->
+<script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+<!-- ZIP helper -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+  const ONLINE_TEXT = "{{ t.online or 'Online' }}";
+  const OFFLINE_TEXT = "{{ t.offline or 'Offline' }}";
+
+  // Sync button
+  document.getElementById("syncBtn").addEventListener("click", function () {
+    const btn = this;
+    const statusDiv = document.getElementById("statusMessage");
+    btn.disabled = true;
+    btn.innerText = "{{ t.syncing or 'Syncing...' }}";
+
+    fetch("/sync-fsp?lang={{ lang }}")
+      .then(r => r.json())
+      .then(data => { statusDiv.textContent = data.message; })
+      .catch(() => { statusDiv.textContent = "{{ t.sync_error or '❌ Failed to sync. Please try again.' }}"; })
+      .finally(() => { btn.disabled = false; btn.innerText = "{{ t.step1 or t.sync_latest or 'Step 1. Sync Latest Records' }}"; });
+  });
+
+  // Service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js?v=2', { updateViaCache: 'none' }).catch(()=>{});
+    });
+  }
+
+  // Online detection -> update status pill (no dimming)
+  const pill = document.getElementById('netStatus');
+  function setOnlineState(isOnline) {
+    pill.textContent = isOnline ? ONLINE_TEXT : OFFLINE_TEXT;
+    pill.classList.toggle('online', isOnline);
+    pill.classList.toggle('offline', !isOnline);
+  }
+
+  async function pingWithTimeout(timeoutMs = 2000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch('/ping', { cache: 'no-store', signal: controller.signal });
+      clearTimeout(timer);
+      return res.ok;
+    } catch {
+      clearTimeout(timer);
+      return false;
+    }
+  }
+
+  async function checkOnline() {
+    const ok = await pingWithTimeout(2000);
+    setOnlineState(ok);
+  }
+
+  checkOnline();
+  setInterval(checkOnline, 5000);
+  window.addEventListener('online', () => setOnlineState(true));
+  window.addEventListener('offline', () => setOnlineState(false));
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration().then(reg => reg && reg.update());
+  }
+</script>
+
+<script>
+  // ---------- IndexedDB ----------
+  async function openScandroidDB() {
+    return await idb.openDB('scandroid', 2, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('records')) db.createObjectStore('records', { keyPath: 'uuid' });
+        if (!db.objectStoreNames.contains('photos'))  db.createObjectStore('photos',  { keyPath: 'uuid' });
+        if (!db.objectStoreNames.contains('meta'))    db.createObjectStore('meta',    { keyPath: 'key' });
+      }
+    });
+  }
+
+  const chunk = (arr, size) => Array.from({length: Math.ceil(arr.length/size)}, (_,i)=>arr.slice(i*size, i*size+size));
+  const findJsonEntry = (zip) => Object.values(zip.files).find(f => /registrations_cache\.json$/i.test(f.name)) || null;
+  const listPhotoEntries = (zip) => Object.values(zip.files).filter(f => /\.enc$/i.test(f.name));
+
+  async function importLatestCache() {
+    const btn = document.getElementById('importBtn');
+    const statusDiv = document.getElementById('statusMessage');
+    const originalText = btn.textContent;
+    btn.disabled = true; btn.textContent = '{{ (lang=="fr") and "Importation…" or (lang=="ar") and "جاري الاستيراد…" or "Importing…" }}';
+
+    try {
+      const res = await fetch('/api/offline/latest.zip', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`Fetch latest.zip failed: ${res.status}`);
+      const zipBlob = await res.blob();
+      const zip = await JSZip.loadAsync(zipBlob);
+
+      const jsonEntry = findJsonEntry(zip);
+      if (!jsonEntry) throw new Error('registrations_cache.json not found in ZIP');
+      const jsonText = await jsonEntry.async('string');
+      const records = JSON.parse(jsonText) || [];
+
+      const db = await openScandroidDB();
+
+      let written = 0;
+      for (const group of chunk(records, 50)) {
+        await Promise.all(group.map(async rec => {
+          const uuid = rec.uuid || rec._uuid;
+          if (!uuid) return;
+          await db.put('records', {
+            uuid,
+            registrationId: rec.registrationId,
+            photo_filename: rec.photo_filename,
+            data: rec.data
+          });
+          written++;
+        }));
+      }
+
+      const photos = listPhotoEntries(zip);
+      let photosWritten = 0;
+      for (const group of chunk(photos, 10)) {
+        const items = await Promise.all(group.map(async entry => {
+          const m = entry.name.match(/([^/\\]+)\.enc$/i);
+          const uuid = m ? m[1] : null;
+          if (!uuid) return null;
+          const buf = await entry.async('arraybuffer');
+          return { uuid, bytes: new Uint8Array(buf) };
+        }));
+        await Promise.all(items.filter(Boolean).map(item => db.put('photos', item)));
+        photosWritten += items.filter(Boolean).length;
+      }
+
+      statusDiv.textContent = `✅ ${written} {{ (lang=='fr') and "bénéficiaires" or (lang=='ar') and "مستفيد" or "beneficiaries" }} · ${photosWritten} {{ (lang=='fr') and "photos" or (lang=='ar') and "صور" or "photos" }}.`;
+      await db.put('meta', { key: 'batchInfo', value: { importedAt: Date.now(), recordCount: written, photos: photosWritten } });
+
+    } catch (err) {
+      console.error(err);
+      statusDiv.textContent = `❌ {{ (lang=='fr') and "Échec de l’import" or (lang=='ar') and "فشل الاستيراد" or "Import failed" }}: ${err.message || err}`;
+    } finally {
+      btn.disabled = false; btn.textContent = originalText;
+    }
+  }
+
+  document.getElementById('importBtn').addEventListener('click', importLatestCache);
+</script>
+<script>
+  const APP_VERSION = "4";  // ← bump this to match version.json
+
+  async function checkAppVersion() {
+    try {
+      const res = await fetch("/version.json", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      const latest = data.version;
+      if (latest && latest !== APP_VERSION) {
+        if (confirm("⚠️ A new version is available.\nClick OK to refresh and update.")) {
+          location.reload(true);
+        }
+      }
+    } catch (e) {
+      console.warn("Version check failed", e);
+    }
+  }
+
+  checkAppVersion();
+</script>
+</body>
+</html>

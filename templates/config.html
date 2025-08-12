@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" {% if lang == 'ar' %}dir="rtl"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ t.config_title }}</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+    }
+
+    .page-wrapper {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .back-button a {
+      text-decoration: none;
+      background-color: #007bff;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .lang-selector {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-top: 60px;
+      margin-bottom: 20px;
+    }
+
+    .logo-container img {
+      height: 60px;
+      margin: 0 10px;
+    }
+
+    .config-container {
+      flex: 1;
+      padding: 0 40px 100px 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: white;
+      box-shadow: 0 0 10px #ccc;
+    }
+
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: left;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    fieldset {
+      margin-top: 40px;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 0 10px #ccc;
+      border: 1px solid #aaa;
+    }
+
+    legend {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      color: #666;
+      padding: 15px 30px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <div class="back-button">
+      <a href="/admin-dashboard?lang={{ lang }}">&larr; {{ t.config_dashboard or "Back to Dashboard" }}</a>
+    </div>
+
+    <div class="lang-selector">
+      <form method="get" action="/config">
+        <label for="lang">{{ t.language }}:</label>
+        <select name="lang" onchange="this.form.submit()">
+          <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+          <option value="fr" {% if lang == 'fr' %}selected{% endif %}>Français</option>
+          <option value="ar" {% if lang == 'ar' %}selected{% endif %}>العربية</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='ns1.png') }}" alt="National Society 1">
+      <img src="{{ url_for('static', filename='scandroid_banner.png') }}" alt="Scandroid Logo">
+      <img src="{{ url_for('static', filename='ns2.png') }}" alt="National Society 2">
+    </div>
+
+    <div class="config-container">
+      <h1>{{ t.config_title }}</h1>
+
+      <form id="configForm">
+        <!-- Regular Fields Table -->
+        <table id="fieldTable">
+          <thead>
+            <tr>
+              <th>{{ t.field_key }}</th>
+              <th>{{ t.label_en }}</th>
+              <th>{{ t.label_fr }}</th>
+              <th>{{ t.label_ar }}</th>
+              <th>{{ t.remove }}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <button type="button" onclick="addRow()">{{ t.add_field }}</button>
+
+        <!-- Photo Field Configuration -->
+        <fieldset>
+          <legend>{{ t.photo_config_title or "Photo Field Configuration" }}</legend>
+
+          <label>
+            <input type="checkbox" id="photoEnabled"> {{ t.enable_photo_field or "Enable photo field display" }}
+          </label>
+          <br><br>
+
+          <label>{{ t.field_key }} (Kobo):</label>
+          <input type="text" id="photoKey"><br><br>
+
+          <label>{{ t.label_en }}:</label>
+          <input type="text" id="photoLabelEn"><br><br>
+
+          <label>{{ t.label_fr }}:</label>
+          <input type="text" id="photoLabelFr"><br><br>
+
+          <label>{{ t.label_ar }}:</label>
+          <input type="text" id="photoLabelAr"><br>
+        </fieldset>
+
+        <br>
+        <button type="submit">{{ t.save }}</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">Developed by 510 @ The Netherlands Red Cross</div>
+    <div class="footer-right">If you need support contact jharrison@redcross.nl</div>
+  </footer>
+
+  <script>
+    // Add a field row
+    function addRowFromData(item = { key: '', labels: { en: '', fr: '', ar: '' } }) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input type="text" name="key" value="${item.key || ''}"></td>
+        <td><input type="text" name="label_en" value="${item.labels.en || ''}"></td>
+        <td><input type="text" name="label_fr" value="${item.labels.fr || ''}"></td>
+        <td><input type="text" name="label_ar" value="${item.labels.ar || ''}"></td>
+        <td><button type="button" onclick="removeRow(this)">X</button></td>
+      `;
+      document.querySelector('#fieldTable tbody').appendChild(row);
+    }
+
+    function addRow() {
+      addRowFromData();
+    }
+
+    function removeRow(button) {
+      button.closest('tr').remove();
+    }
+
+    async function loadConfig() {
+      const config = {{ config|tojson }};
+      if (config.fields) {
+        config.fields.forEach(addRowFromData);
+      }
+
+      if (config.photo) {
+        document.getElementById('photoEnabled').checked = config.photo.enabled;
+        document.getElementById('photoKey').value = config.photo.field_name || 'photo';
+        document.getElementById('photoLabelEn').value = config.photo.labels.en || '';
+        document.getElementById('photoLabelFr').value = config.photo.labels.fr || '';
+        document.getElementById('photoLabelAr').value = config.photo.labels.ar || '';
+      }
+    }
+
+    document.getElementById('configForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const rows = document.querySelectorAll('#fieldTable tbody tr');
+      const fields = Array.from(rows).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return {
+          key: inputs[0].value,
+          labels: {
+            en: inputs[1].value,
+            fr: inputs[2].value,
+            ar: inputs[3].value
+          }
+        };
+      });
+
+      const photoConfig = {
+        enabled: document.getElementById('photoEnabled').checked,
+        field_name: document.getElementById('photoKey').value,
+        labels: {
+          en: document.getElementById('photoLabelEn').value,
+          fr: document.getElementById('photoLabelFr').value,
+          ar: document.getElementById('photoLabelAr').value
+        }
+      };
+
+      const result = {
+        fields: fields,
+        photo: photoConfig
+      };
+
+      const res = await fetch('/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(result)
+      });
+
+      if (res.ok) {
+        alert('{{ t.saved_successfully }}');
+      } else {
+        alert('{{ t.failed_to_save }}');
+      }
+    });
+
+    window.onload = loadConfig;
+  </script>
+</body>
+</html>

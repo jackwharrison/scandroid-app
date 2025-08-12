@@ -1,0 +1,29 @@
+[
+  {
+    "uuid": "160c3efe-c032-4012-9cae-d27164e6a23e",
+    "registrationId": 4,
+    "photo_filename": "160c3efe-c032-4012-9cae-d27164e6a23e.jpg",
+    "data": {
+      "city": "Den Haag",
+      "fullName": "John"
+    }
+  },
+  {
+    "uuid": "b5289dbf-716c-4d44-9eca-1eee50797bda",
+    "registrationId": 6,
+    "photo_filename": "b5289dbf-716c-4d44-9eca-1eee50797bda.jpg",
+    "data": {
+      "city": "Rotterdam",
+      "fullName": "Marije"
+    }
+  },
+  {
+    "uuid": "4fa117d8-705a-4220-8317-ec1c084f45a2",
+    "registrationId": 8,
+    "photo_filename": "4fa117d8-705a-4220-8317-ec1c084f45a2.jpg",
+    "data": {
+      "city": "Den Haag",
+      "fullName": "sfgdsfgd"
+    }
+  }
+]

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" {% if lang == 'ar' %}dir="rtl"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ t.title }}</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 100px;
+    }
+
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .logo-container img {
+      height: 80px;
+    }
+
+    .message-box {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 10px #ccc;
+      text-align: center;
+    }
+
+    .message-box h1 {
+      color: red;
+    }
+
+    .message-box p {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    .lang-selector {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      text-align: right;
+    }
+
+    footer {
+      background-color: #f1f1f1;
+      color: #666;
+      padding: 15px 30px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="lang-selector">
+      <form method="get" action="/already_submitted">
+        <input type="hidden" name="id" value="{{ request.args.get('id') }}">
+        <label for="lang">{{ t.language }}:</label>
+        <select name="lang" onchange="this.form.submit()">
+          <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+          <option value="fr" {% if lang == 'fr' %}selected{% endif %}>Français</option>
+          <option value="ar" {% if lang == 'ar' %}selected{% endif %}>العربية</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='ns2.png') }}" alt="NS2">
+      <img src="{{ url_for('static', filename='scandroid_banner.png') }}" alt="Scandroid">
+      <img src="{{ url_for('static', filename='ns1.png') }}" alt="NS1">
+    </div>
+
+    <div class="message-box">
+      <h1>{{ t.already_scanned }}</h1>
+      <p>{{ t.already_submitted_page }}</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">Developed by 510 @ The Netherlands Red Cross</div>
+    <div class="footer-right">If you need support contact jharrison@redcross.nl</div>
+  </footer>
+</body>
+</html>

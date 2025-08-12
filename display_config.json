@@ -1,0 +1,29 @@
+{
+  "fields": [
+    {
+      "key": "city",
+      "labels": {
+        "en": "City",
+        "fr": "City",
+        "ar": "City"
+      }
+    },
+    {
+      "key": "fullName",
+      "labels": {
+        "en": "Name",
+        "fr": "Nom",
+        "ar": "al name"
+      }
+    }
+  ],
+  "photo": {
+    "enabled": true,
+    "field_name": "photo",
+    "labels": {
+      "en": "Photo",
+      "fr": "Photo",
+      "ar": "صورة"
+    }
+  }
+}
